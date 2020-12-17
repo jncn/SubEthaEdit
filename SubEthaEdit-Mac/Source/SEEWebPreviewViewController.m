@@ -13,13 +13,15 @@
 #import "SEEScopedBookmarkManager.h"
 #import "PopUpButton.h"
 #import "SEEWebPreview.h"
+#import "SEEPreviewWebView.h"
 
 @class PopUpButton;
 
 static NSString *WebPreviewWindowSizePreferenceKey =@"WebPreviewWindowSize";
 static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 
-@interface SEEWebPreviewViewController ()
+@interface SEEWebPreviewViewController () <WKScriptMessageHandler>
+@property (nonatomic, strong) IBOutlet SEEPreviewWebView *webView;
 @property (nonatomic, strong) IBOutlet WebView *oWebView;
 @property (nonatomic, strong) IBOutlet NSTextField *oBaseUrlTextField;
 @property (nonatomic, strong) IBOutlet PopUpButton *oRefreshPopupButton;
@@ -85,18 +87,11 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 		}
 	}];
 	
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(somePlainTextDocumentDidSave:)
-                                                 name:PlainTextDocumentDidSaveNotification 
-                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(somePlainTextDocumentDidSave:) name:PlainTextDocumentDidSaveNotification object:nil];
     return self;
 }
 
 - (void)dealloc {
-    [self.oWebView setFrameLoadDelegate:nil];
-    [self.oWebView setUIDelegate:nil];
-    [self.oWebView setResourceLoadDelegate:nil];
-	[self.oWebView setPolicyDelegate:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self.documentDidSaveObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self.documentDidChangeObserver];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -106,10 +101,9 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 - (void)setPlainTextDocument:(PlainTextDocument *)aDocument {
     _plainTextDocument = aDocument;
     if (!aDocument) {
-        [self.oWebView stopLoading:self];
+        [self.webView stopLoading:self];
     }
 }
-
 
 - (PlainTextDocument *)plainTextDocument {
     return _plainTextDocument;
@@ -159,7 +153,7 @@ static NSScrollView *firstScrollView(NSView *aView) {
 
 -(void)reloadWebViewCachingAllowed:(BOOL)aFlag {
     _shallCache=aFlag;
-    NSScrollView *scrollView=firstScrollView(self.oWebView);
+    NSScrollView *scrollView=firstScrollView(self.webView);
     // NSLog(@"found scrollview: %@",[scrollView description]);
     if (scrollView && !_hasSavedVisibleRect) {
         _documentVisibleRect=[scrollView documentVisibleRect];
@@ -193,14 +187,15 @@ static NSScrollView *firstScrollView(NSView *aView) {
     SEEWebPreview *preview = self.plainTextDocument.documentMode.webPreview;
     
     NSStringEncoding encoding = [textStorage encoding];
-    NSString *IANACharSetName=(NSString *)CFStringConvertEncodingToIANACharSetName(
-    CFStringConvertNSStringEncodingToEncoding(encoding));
-    
+    NSString *IANACharSetName=(NSString *)CFStringConvertEncodingToIANACharSetName(CFStringConvertNSStringEncodingToEncoding(encoding));
     
     void (^previewBlock)(NSString *html) = ^(NSString *html){
         [request setHTTPBody:[html dataUsingEncoding:encoding]];
         [NSOperationQueue TCM_performBlockOnMainThreadSynchronously:^{
-            [[self.oWebView mainFrame] loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" textEncodingName:IANACharSetName baseURL:baseURL];
+            // `allowingReadAccessToURL` is the key to load resources like images and css
+//            [self.webView loadFileURL:baseURL allowingReadAccessToURL:baseURL];
+//            [self.webView loadHTMLString:html baseURL:baseURL];
+            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
         }];
     };
     
@@ -211,8 +206,6 @@ static NSScrollView *firstScrollView(NSView *aView) {
     } else {
         previewBlock(string);
     }
-    
-    
 }
 
 #pragma mark
@@ -296,21 +289,27 @@ static NSScrollView *firstScrollView(NSView *aView) {
     self.oRefreshPopupButton.lineDrawingEdge = CGRectMinXEdge;
     [self.oRefreshPopupButton setLineColor:[NSColor tertiaryLabelColor]];
     
-    [self.oWebView setFrameLoadDelegate:self];
-    [self.oWebView setUIDelegate:self];
-    [self.oWebView setResourceLoadDelegate:self];
-	[self.oWebView setPolicyDelegate:self];
-
-    [self.oWebView setPreferencesIdentifier:@"WebPreviewPreferences"];
-    WebPreferences *prefs = [self.oWebView preferences];
-    [prefs setLoadsImagesAutomatically:YES];
-    [prefs setJavaEnabled:YES];
-    [prefs setJavaScriptEnabled:YES];
-    [prefs setPlugInsEnabled:YES];
+    WKPreferences *prefs = self.webView.configuration.preferences;
+    [prefs setValue:@YES forKey:@"developerExtrasEnabled"];
+    
+    WKUserContentController *contentController = self.webView.configuration.userContentController;
+    [contentController addScriptMessageHandler:self name:@"scriptHoverHandler"];
+    NSURL *scriptURL = [[NSBundle mainBundle] URLForResource:@"WebPreviewScript" withExtension:@"js"];
+    NSString *scriptString = [NSString stringWithContentsOfURL:scriptURL encoding:NSUTF8StringEncoding error:NULL];
+    WKUserScript *userScript = [[WKUserScript alloc] initWithSource:scriptString injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:NO];
+    [contentController addUserScript:userScript];
+    
     [self.oStatusTextField setStringValue:@""];
 
 	[self updateBaseURL];
     [self setRefreshType:_refreshType];
+}
+
+-(void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+    if ([message.name isEqualToString:@"scriptHoverHandler"]) {
+        [self.oStatusTextField setStringValue:message.body];
+        [self.webView setSelectedURL:message.body];
+    }
 }
 
 #pragma mark -
@@ -377,59 +376,6 @@ static NSScrollView *firstScrollView(NSView *aView) {
             [(NSView *)[scrollView documentView] scrollRectToVisible:_documentVisibleRect];
             _hasSavedVisibleRect=NO;
         }
-    }
-}
-
-- (void)webView:(WebView *)sender mouseDidMoveOverElement:(NSDictionary *)elementInformation modifierFlags:(NSUInteger)modifierFlags {
-    if ([elementInformation objectForKey:WebElementImageKey] ||
-        [elementInformation objectForKey:WebElementLinkURLKey]) {
-        // NSLog(@"%@",[elementInformation description]);
-        NSMutableString *string=[NSMutableString string];
-        NSURL    *url   =[elementInformation objectForKey:WebElementLinkURLKey];
-        id        target=[elementInformation objectForKey:WebElementLinkTargetFrameKey];
-        NSString *title =[elementInformation objectForKey:WebElementLinkTitleKey];
-        if (title)         [string appendFormat:@"%@ ",title];
-        if (url)           [string appendFormat:@"<%@> ",[url relativeString]];
-        if ([target name]) [string appendFormat:@"->%@ ",[target name]];
-        NSString *alt   =[elementInformation objectForKey:@"WebElementImageAltString"];
-        NSImage *image  =[elementInformation objectForKey:WebElementImageKey];
-        if (alt)           [string appendFormat:@"'%@' ",alt];
-        if (image)         [string appendFormat:@"%@ ",NSStringFromSize([image size])];
-        [self.oStatusTextField setStringValue:string];
-    } else {
-        if (![[self.oStatusTextField stringValue] isEqualToString:@""]) {
-            [self.oStatusTextField setStringValue:@""];
-        }
-    }
-}
-
-- (NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems {
-    NSMutableArray *returnArray = [NSMutableArray array];
-    for (NSMenuItem *defaultItem in defaultMenuItems) {
-        int tag=[defaultItem tag];
-        if (tag == WebMenuItemTagOpenLinkInNewWindow) {
-            NSMenuItem *item=[defaultItem copy];
-            [item setTitle:NSLocalizedString(@"Open Link in Browser",@"Web preview open link in browser contextual menu item")];
-            [item setAction:@selector(openInBrowser:)];
-            [item setTarget:nil];
-            [item setRepresentedObject:element];
-            [returnArray addObject:item];
-        } else if (tag == WebMenuItemTagDownloadImageToDisk ||
-        		   tag == WebMenuItemTagDownloadLinkToDisk) {
-        	// don't add
-        } else {
-            [returnArray addObject:defaultItem];
-        }
-    }
-    return returnArray;
-}
-
-- (IBAction)openInBrowser:(id)aSender {
-    NSMenuItem *item=(NSMenuItem *)aSender;
-    NSDictionary *element=[item representedObject];
-    NSURL *url = [element objectForKey:WebElementLinkURLKey];
-    if (url) {
-        [[NSWorkspace sharedWorkspace] openURL:url];
     }
 }
 

@@ -133,7 +133,9 @@
 		3188F6800CAD13E0009E4C0B /* DNDArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3188F6780CAD1218009E4C0B /* DNDArrayController.m */; };
 		31D2C7000CA7C9C8003CC5C9 /* PrecedenceRuleCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 31D2C6E50CA7C7A7003CC5C9 /* PrecedenceRuleCell.m */; };
 		31FFC93D104E97A000E08256 /* NSErrorTCMAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 31FFC93C104E97A000E08256 /* NSErrorTCMAdditions.m */; };
+		3D1773F6258AC7B0002F73D7 /* WebPreviewScript.js in Resources */ = {isa = PBXBuildFile; fileRef = 3D1773F5258AC7B0002F73D7 /* WebPreviewScript.js */; };
 		3D30287E2578602700E35C8B /* SEEDocumentListGroupTableRowView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D30287D2578602700E35C8B /* SEEDocumentListGroupTableRowView.m */; };
+		3D6E5588258A2B4100746E7B /* SEEPreviewWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D6E5587258A2B4100746E7B /* SEEPreviewWebView.m */; };
 		3D80BA33258522A50093CA85 /* SEEFindAndReplaceView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D80BA35258522A50093CA85 /* SEEFindAndReplaceView.xib */; };
 		3D83EDAB2576B1E6004288B2 /* SEEDocumentListWindowController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3D83EDAD2576B1E6004288B2 /* SEEDocumentListWindowController.xib */; };
 		3D83EDB4257835AE004288B2 /* SEEDividerListItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D83EDB3257835AE004288B2 /* SEEDividerListItem.m */; };
@@ -771,8 +773,11 @@
 		31FFC93B104E97A000E08256 /* NSErrorTCMAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = NSErrorTCMAdditions.h; sourceTree = "<group>"; };
 		31FFC93C104E97A000E08256 /* NSErrorTCMAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSErrorTCMAdditions.m; sourceTree = "<group>"; };
 		32DBCF750370BD2300C91783 /* SubEthaEdit_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SubEthaEdit_Prefix.pch; sourceTree = "<group>"; };
+		3D1773F5258AC7B0002F73D7 /* WebPreviewScript.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebPreviewScript.js; sourceTree = "<group>"; };
 		3D30287C2578602700E35C8B /* SEEDocumentListGroupTableRowView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SEEDocumentListGroupTableRowView.h; sourceTree = "<group>"; };
 		3D30287D2578602700E35C8B /* SEEDocumentListGroupTableRowView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SEEDocumentListGroupTableRowView.m; sourceTree = "<group>"; };
+		3D6E5586258A2B4100746E7B /* SEEPreviewWebView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SEEPreviewWebView.h; sourceTree = "<group>"; };
+		3D6E5587258A2B4100746E7B /* SEEPreviewWebView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SEEPreviewWebView.m; sourceTree = "<group>"; };
 		3D80BA34258522A50093CA85 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/SEEFindAndReplaceView.xib; sourceTree = "<group>"; };
 		3D80BA38258522AA0093CA85 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/SEEFindAndReplaceView.strings; sourceTree = "<group>"; };
 		3D80BA3A258523390093CA85 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/FindAll.strings; sourceTree = "<group>"; };
@@ -1641,6 +1646,8 @@
 		2A37F4ABFDCFA73011CA2CEA /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				3D6E5586258A2B4100746E7B /* SEEPreviewWebView.h */,
+				3D6E5587258A2B4100746E7B /* SEEPreviewWebView.m */,
 				142893DC09575A3000D14688 /* AboutPanelController.h */,
 				142893DD09575A3000D14688 /* AboutPanelController.m */,
 				142893DE09575A3000D14688 /* AppController.h */,
@@ -1685,6 +1692,7 @@
 		2A37F4B8FDCFA73011CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				3D1773F5258AC7B0002F73D7 /* WebPreviewScript.js */,
 				F27EDD0D216BC2ED00987579 /* SharedSupport */,
 				8D15AC360486D014006FF6A4 /* Info.plist */,
 				4C6BDC5718896DFF0088CBFC /* XIBs */,
@@ -2364,6 +2372,7 @@
 				4CD5F80617FB0D5B00F49E31 /* OpenPanelAccessory.xib in Resources */,
 				F22024D5191D0BFE0098982C /* ParticipantReadOnlyTurnOffHover.png in Resources */,
 				3D83EDAB2576B1E6004288B2 /* SEEDocumentListWindowController.xib in Resources */,
+				3D1773F6258AC7B0002F73D7 /* WebPreviewScript.js in Resources */,
 				3D80BA33258522A50093CA85 /* SEEFindAndReplaceView.xib in Resources */,
 				F22024D0191D0BFE0098982C /* ParticipantKickHover@2x.png in Resources */,
 				F22024C7191D0BFE0098982C /* ParticipantFollowTurnOffPressed.png in Resources */,
@@ -2484,6 +2493,7 @@
 				142891540957475E00D14688 /* TCMBEEPManagementProfile.m in Sources */,
 				142891550957475E00D14688 /* TCMBEEPMessage.m in Sources */,
 				142891560957475E00D14688 /* TCMBEEPProfile.m in Sources */,
+				3D6E5588258A2B4100746E7B /* SEEPreviewWebView.m in Sources */,
 				142891570957475E00D14688 /* TCMBEEPSession.m in Sources */,
 				142891DE09574E5B00D14688 /* TCMHost.m in Sources */,
 				F2279086223D245800A04A44 /* SEEDocumentListTableView.m in Sources */,
