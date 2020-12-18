@@ -20,7 +20,7 @@
 static NSString *WebPreviewWindowSizePreferenceKey =@"WebPreviewWindowSize";
 static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 
-@interface SEEWebPreviewViewController () <WKScriptMessageHandler>
+@interface SEEWebPreviewViewController () <WKNavigationDelegate, WKScriptMessageHandler>
 @property (nonatomic, strong) IBOutlet SEEPreviewWebView *webView;
 @property (nonatomic, strong) IBOutlet WebView *oWebView;
 @property (nonatomic, strong) IBOutlet NSTextField *oBaseUrlTextField;
@@ -30,10 +30,9 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 @property (nonatomic, strong) PlainTextDocument *plainTextDocument;
 @property (nonatomic, weak) NSTimer *delayedRefreshTimer;
 
-@property (nonatomic) NSRect documentVisibleRect;
-@property (nonatomic) BOOL hasSavedVisibleRect;
 @property (nonatomic) SEEWebPreviewRefreshType refreshType;
 @property (nonatomic) BOOL shallCache;
+@property (nonatomic) CGPoint scrollPosition;
 
 // Localized XIB
 @property (nonatomic, readonly) NSString *localizedBaseURLLabelText;
@@ -57,7 +56,6 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 - (instancetype)initWithPlainTextDocument:(PlainTextDocument *)aDocument {
     self=[super initWithNibName:@"SEEWebPreviewViewController" bundle:nil];
     _plainTextDocument=aDocument;
-    _hasSavedVisibleRect=NO;
     _shallCache=YES;
     NSNumber *refreshTypeNumber=[[[aDocument documentMode] defaults] objectForKey:WebPreviewRefreshModePreferenceKey];
     _refreshType=kWebPreviewRefreshDelayed;
@@ -128,37 +126,9 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 }
 
 #pragma mark
-//static void logSubViews(NSArray *aSubviewsArray) {
-//    if (aSubviewsArray) NSLog(@"---");
-//    for (NSView *subview in aSubviewsArray) {
-//        NSLog(@"%@",[subview description]);
-//        logSubViews([subview subviews]);
-//    }
-//}
-
-static NSScrollView *firstScrollView(NSView *aView) {
-    NSArray *aSubviewsArray=[aView subviews];
-    unsigned i;
-    for (i=0;i<[aSubviewsArray count];i++) {
-        if ([[aSubviewsArray objectAtIndex:i] isKindOfClass:[NSScrollView class]]) {
-            return [aSubviewsArray objectAtIndex:i];
-        }
-    }
-    for (i=0;i<[aSubviewsArray count];i++) {
-        NSScrollView *scrollview=firstScrollView([aSubviewsArray objectAtIndex:i]);
-        if (scrollview) return scrollview;
-    }
-    return nil;
-}
 
 -(void)reloadWebViewCachingAllowed:(BOOL)aFlag {
     _shallCache=aFlag;
-    NSScrollView *scrollView=firstScrollView(self.webView);
-    // NSLog(@"found scrollview: %@",[scrollView description]);
-    if (scrollView && !_hasSavedVisibleRect) {
-        _documentVisibleRect=[scrollView documentVisibleRect];
-        _hasSavedVisibleRect=YES;
-    }
     
     NSURL *baseURL=[NSURL URLWithString:@"http://localhost/"];
     NSString *potentialURLString = [self.oBaseUrlTextField stringValue];
@@ -288,32 +258,43 @@ static NSScrollView *firstScrollView(NSView *aView) {
 
     self.oRefreshPopupButton.lineDrawingEdge = CGRectMinXEdge;
     [self.oRefreshPopupButton setLineColor:[NSColor tertiaryLabelColor]];
+    [self.oStatusTextField setStringValue:@""];
     
     WKPreferences *prefs = self.webView.configuration.preferences;
     [prefs setValue:@YES forKey:@"developerExtrasEnabled"];
     
     WKUserContentController *contentController = self.webView.configuration.userContentController;
     [contentController addScriptMessageHandler:self name:@"scriptHoverHandler"];
+    [contentController addScriptMessageHandler:self name:@"scriptUpdateScrollPosition"];
     NSURL *scriptURL = [[NSBundle mainBundle] URLForResource:@"WebPreviewScript" withExtension:@"js"];
     NSString *scriptString = [NSString stringWithContentsOfURL:scriptURL encoding:NSUTF8StringEncoding error:NULL];
     WKUserScript *userScript = [[WKUserScript alloc] initWithSource:scriptString injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:NO];
     [contentController addUserScript:userScript];
-    
-    [self.oStatusTextField setStringValue:@""];
 
 	[self updateBaseURL];
     [self setRefreshType:_refreshType];
 }
 
--(void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {
     if ([message.name isEqualToString:@"scriptHoverHandler"]) {
         [self.oStatusTextField setStringValue:message.body];
         [self.webView setSelectedURL:message.body];
     }
+    
+    if ([message.name isEqualToString:@"scriptUpdateScrollPosition"]) {
+        NSArray *position = [message.body componentsSeparatedByString:@","];
+        self.scrollPosition = CGPointMake([position[0] floatValue], [position[1] floatValue]);
+    }
 }
 
-#pragma mark -
-#pragma mark ### CSS-update ###
+#pragma mark - WKNavigationDelegate
+
+- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+    NSString *script = [NSString stringWithFormat:@"window.scrollTo(%f,%f);", self.scrollPosition.x, self.scrollPosition.y];
+    [self.webView evaluateJavaScript:script completionHandler:nil];
+}
+
+#pragma mark - CSS-update
 
 - (void)somePlainTextDocumentDidSave:(NSNotification *)aNotification {
     NSString *savedFileName = [[[aNotification object] fileURL] lastPathComponent];
@@ -364,19 +345,6 @@ static NSScrollView *firstScrollView(NSView *aView) {
 
 - (void)webView:(WebView *)webView decidePolicyForMIMEType:(NSString *)type request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id < WebPolicyDecisionListener >)listener {
 	[listener use];
-}
-
-#pragma mark -
-#pragma mark ### WebFrameLoadDelegate ###
-
-- (void)webView:(WebView *)aSender didFinishLoadForFrame:(WebFrame *)aFrame {
-    if ([aFrame isEqualTo:[self.oWebView mainFrame]]) {
-        NSScrollView *scrollView=firstScrollView(self.oWebView);
-        if (scrollView && _hasSavedVisibleRect) {
-            [(NSView *)[scrollView documentView] scrollRectToVisible:_documentVisibleRect];
-            _hasSavedVisibleRect=NO;
-        }
-    }
 }
 
 #pragma mark - Refresh timer

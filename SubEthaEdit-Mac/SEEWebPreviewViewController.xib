@@ -28,18 +28,13 @@
                         <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" audio="YES" video="YES"/>
                         <wkPreferences key="preferences" javaScriptCanOpenWindowsAutomatically="NO"/>
                     </wkWebViewConfiguration>
+                    <connections>
+                        <outlet property="navigationDelegate" destination="-2" id="ntc-7L-ypf"/>
+                    </connections>
                 </wkWebView>
                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="ntc-8y-SiH">
                     <rect key="frame" x="0.0" y="237" width="480" height="35"/>
                     <subviews>
-                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="heL-g6-SVy">
-                            <rect key="frame" x="60" y="7" width="360" height="21"/>
-                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="laj-BP-WkR">
-                                <font key="font" metaFont="system"/>
-                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                            </textFieldCell>
-                        </textField>
                         <button translatesAutoresizingMaskIntoConstraints="NO" id="Mtf-dY-7pH">
                             <rect key="frame" x="446" y="4.5" width="34.5" height="29"/>
                             <constraints>
@@ -61,43 +56,24 @@
                                 <constraint firstAttribute="height" constant="1" id="a5i-1n-5Gf"/>
                             </constraints>
                         </box>
-                        <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="10" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" fixedFrame="YES" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="NZc-Ze-ZQP">
-                            <rect key="frame" x="8" y="13" width="30" height="9"/>
-                            <subviews>
-                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="fuZ-Vi-1CX">
-                                    <rect key="frame" x="0.0" y="-2" width="10" height="14"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSGoBackTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" id="qLf-Yh-9n4">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                    </buttonCell>
-                                </button>
-                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="38z-5F-9Wd">
-                                    <rect key="frame" x="20" y="-2" width="10" height="14"/>
-                                    <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSGoForwardTemplate" imagePosition="overlaps" alignment="center" lineBreakMode="truncatingTail" state="on" imageScaling="proportionallyDown" inset="2" id="K7X-vJ-XxR">
-                                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                        <font key="font" metaFont="system"/>
-                                    </buttonCell>
-                                </button>
-                            </subviews>
-                            <visibilityPriorities>
-                                <integer value="1000"/>
-                                <integer value="1000"/>
-                            </visibilityPriorities>
-                            <customSpacing>
-                                <real value="3.4028234663852886e+38"/>
-                                <real value="3.4028234663852886e+38"/>
-                            </customSpacing>
-                        </stackView>
+                        <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="heL-g6-SVy">
+                            <rect key="frame" x="10" y="7" width="436" height="21"/>
+                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="laj-BP-WkR">
+                                <font key="font" metaFont="system"/>
+                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            </textFieldCell>
+                        </textField>
                     </subviews>
                     <constraints>
-                        <constraint firstAttribute="trailing" secondItem="heL-g6-SVy" secondAttribute="trailing" constant="60" id="1De-3i-A8i"/>
-                        <constraint firstItem="heL-g6-SVy" firstAttribute="centerX" secondItem="ntc-8y-SiH" secondAttribute="centerX" id="GcF-vY-KpV"/>
                         <constraint firstItem="heL-g6-SVy" firstAttribute="top" secondItem="ntc-8y-SiH" secondAttribute="top" constant="7" id="LBF-Q5-kfm"/>
                         <constraint firstAttribute="trailing" secondItem="3h8-s6-6Cu" secondAttribute="trailing" id="Mio-rd-XfJ"/>
                         <constraint firstItem="3h8-s6-6Cu" firstAttribute="leading" secondItem="ntc-8y-SiH" secondAttribute="leading" id="Uhz-O1-erN"/>
                         <constraint firstItem="heL-g6-SVy" firstAttribute="centerY" secondItem="Mtf-dY-7pH" secondAttribute="centerY" id="YBG-NZ-Dad"/>
                         <constraint firstAttribute="trailing" secondItem="Mtf-dY-7pH" secondAttribute="trailing" id="d4H-fW-pRY"/>
                         <constraint firstItem="Mtf-dY-7pH" firstAttribute="centerY" secondItem="ntc-8y-SiH" secondAttribute="centerY" id="eio-rW-WCH"/>
+                        <constraint firstItem="Mtf-dY-7pH" firstAttribute="leading" secondItem="heL-g6-SVy" secondAttribute="trailing" id="kfJ-c6-ihR"/>
+                        <constraint firstItem="heL-g6-SVy" firstAttribute="leading" secondItem="ntc-8y-SiH" secondAttribute="leading" constant="10" id="tMX-mY-WOG"/>
                         <constraint firstItem="3h8-s6-6Cu" firstAttribute="top" secondItem="ntc-8y-SiH" secondAttribute="top" constant="35" id="uMD-0T-wM0"/>
                     </constraints>
                 </customView>
@@ -183,8 +159,6 @@
         </customView>
     </objects>
     <resources>
-        <image name="NSGoBackTemplate" width="10" height="14"/>
-        <image name="NSGoForwardTemplate" width="10" height="14"/>
         <image name="NSRefreshTemplate" width="14" height="16"/>
     </resources>
 </document>
