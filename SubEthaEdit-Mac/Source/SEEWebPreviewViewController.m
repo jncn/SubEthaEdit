@@ -163,9 +163,10 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
         [request setHTTPBody:[html dataUsingEncoding:encoding]];
         [NSOperationQueue TCM_performBlockOnMainThreadSynchronously:^{
             // `allowingReadAccessToURL` is the key to load resources like images and css
-//            [self.webView loadFileURL:baseURL allowingReadAccessToURL:baseURL];
-//            [self.webView loadHTMLString:html baseURL:baseURL];
-            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
+            NSURL *u = [baseURL URLByDeletingLastPathComponent];
+            [self.webView loadFileURL:baseURL allowingReadAccessToURL:u];
+            [self.webView loadHTMLString:html baseURL:baseURL];
+//            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
         }];
     };
     
@@ -292,6 +293,14 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     NSString *script = [NSString stringWithFormat:@"window.scrollTo(%f,%f);", self.scrollPosition.x, self.scrollPosition.y];
     [self.webView evaluateJavaScript:script completionHandler:nil];
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler {
+    decisionHandler(WKNavigationActionPolicyAllow);
+}
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler {
+    decisionHandler(WKNavigationResponsePolicyAllow);
 }
 
 #pragma mark - CSS-update
