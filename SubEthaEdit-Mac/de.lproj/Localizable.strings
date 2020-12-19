@@ -838,27 +838,6 @@
 /* Editor Tool Tip Advertise Button - Disabled */
 "TOOL_TIP_ANNOUNCE_BUTTON_DISABLED" = "Dokument ankündigen nicht möglich";
 
-
-/* Web Preview - Labels and Tool Tips */
-
-/* Web Preview - Label for the Base URL */
-"WEB_PREVIEW_BASE_URL_LABEL" = "Basis URL:";
-
-/* Web Preview - Tool Tip for the Refresh Popup */
-"WEB_PREVIEW_REFRESH_MODE_TOOL_TIP" = "Aktualisierungsmodus";
-
-/* Web Preview - Tool Tip for the Manual Refresh Button */
-"WEB_PREVIEW_MANUAL_REFRESH_TOOL_TIP" = "Aktualisierung";
-
-/* Web Preview - Refresh Popup Item - Automatic */
-"WEB_PREVIEW_REFRESH_POPUP_AUTOMATIC" = "Automatisch";
-/* Web Preview - Refresh Popup Item - Delayed */
-"WEB_PREVIEW_REFRESH_POPUP_DELAYED" = "Verzögert";
-/* Web Preview - Refresh Popup Item - On Save */
-"WEB_PREVIEW_REFRESH_POPUP_ON_SAVE" = "Beim Speichern";
-/* Web Preview - Refresh Popup Item - Manual */
-"WEB_PREVIEW_REFRESH_POPUP_MANUAL" = "Manuell";
-
 "FIND_REPLACE_PANEL_SCOPE_DOCUMENT" = "Dokument";
 
 "FIND_REPLACE_PANEL_MENU_CLEAR_SCOPE" = "Suchbereich zurücksetzen %@";

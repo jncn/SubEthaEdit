@@ -34,15 +34,6 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 @property (nonatomic) BOOL shallCache;
 @property (nonatomic) CGPoint scrollPosition;
 
-// Localized XIB
-@property (nonatomic, readonly) NSString *localizedBaseURLLabelText;
-@property (nonatomic, readonly) NSString *localizedRefreshModePopupToolTip;
-@property (nonatomic, readonly) NSString *localizedManualRefreshButtonToolTip;
-@property (nonatomic, readonly) NSString *localizedRefreshModePopupItemAutomatic;
-@property (nonatomic, readonly) NSString *localizedRefreshModePopupItemDelayed;
-@property (nonatomic, readonly) NSString *localizedRefreshModePopupItemOnSave;
-@property (nonatomic, readonly) NSString *localizedRefreshModePopupItemManual;
-
 @property (nonatomic, weak) id documentDidChangeObserver;
 @property (nonatomic, weak) id documentDidSaveObserver;
 
@@ -163,8 +154,7 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
         [request setHTTPBody:[html dataUsingEncoding:encoding]];
         [NSOperationQueue TCM_performBlockOnMainThreadSynchronously:^{
             // `allowingReadAccessToURL` is the key to load resources like images and css
-            NSURL *u = [baseURL URLByDeletingLastPathComponent];
-            [self.webView loadFileURL:baseURL allowingReadAccessToURL:u];
+            [self.webView loadFileURL:baseURL allowingReadAccessToURL:[baseURL URLByDeletingLastPathComponent]];
             [self.webView loadHTMLString:html baseURL:baseURL];
 //            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
         }];
@@ -212,45 +202,6 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 
 -(IBAction)changeRefreshType:(id)aSender {
     [self setRefreshType:[[aSender selectedItem] tag]];
-}
-
-#pragma mark - Localized Xib
-- (NSString *)localizedBaseURLLabelText {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_BASE_URL_LABEL", nil, [NSBundle mainBundle], @"Base URL:", @"Web Preview - Label for the Base URL");
-	return string;
-}
-
-
-- (NSString *)localizedRefreshModePopupToolTip {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_REFRESH_MODE_TOOL_TIP", nil, [NSBundle mainBundle], @"Refresh Mode", @"Web Preview - Tool Tip for the Refresh Popup");
-	return string;
-}
-
-- (NSString *)localizedManualRefreshButtonToolTip {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_MANUAL_REFRESH_TOOL_TIP", nil, [NSBundle mainBundle], @"Refresh", @"Web Preview - Tool Tip for the Manual Refresh Button");
-	return string;
-}
-
-// PopUp Refresh Menu Items
-
-- (NSString *)localizedRefreshModePopupItemAutomatic {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_REFRESH_POPUP_AUTOMATIC", nil, [NSBundle mainBundle], @"automatic", @"Web Preview - Refresh Popup Item - Automatic");
-	return string;
-}
-
-- (NSString *)localizedRefreshModePopupItemDelayed {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_REFRESH_POPUP_DELAYED", nil, [NSBundle mainBundle], @"delayed", @"Web Preview - Refresh Popup Item - Delayed");
-	return string;
-}
-
-- (NSString *)localizedRefreshModePopupItemOnSave {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_REFRESH_POPUP_ON_SAVE", nil, [NSBundle mainBundle], @"on save", @"Web Preview - Refresh Popup Item - On Save");
-	return string;
-}
-
-- (NSString *)localizedRefreshModePopupItemManual {
-	NSString *string = NSLocalizedStringWithDefaultValue(@"WEB_PREVIEW_REFRESH_POPUP_MANUAL", nil, [NSBundle mainBundle], @"manually", @"Web Preview - Refresh Popup Item - Manual");
-	return string;
 }
 
 #pragma mark - NSViewController overrides

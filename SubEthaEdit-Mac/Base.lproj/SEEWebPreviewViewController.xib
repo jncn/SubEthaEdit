@@ -25,7 +25,7 @@
                 <customView translatesAutoresizingMaskIntoConstraints="NO" id="ntc-8y-SiH">
                     <rect key="frame" x="0.0" y="602" width="798" height="35"/>
                     <subviews>
-                        <button translatesAutoresizingMaskIntoConstraints="NO" id="Mtf-dY-7pH">
+                        <button toolTip="Refresh" translatesAutoresizingMaskIntoConstraints="NO" id="Mtf-dY-7pH">
                             <rect key="frame" x="764" y="4.5" width="34.5" height="29"/>
                             <constraints>
                                 <constraint firstAttribute="height" constant="22" id="PBS-bW-pld"/>
@@ -37,7 +37,6 @@
                             </buttonCell>
                             <connections>
                                 <action selector="refreshAndEmptyCache:" target="-2" id="CYd-4g-GCx"/>
-                                <binding destination="-2" name="toolTip" keyPath="self.localizedManualRefreshButtonToolTip" id="BPy-bD-CWZ"/>
                             </connections>
                         </button>
                         <box verticalHuggingPriority="750" boxType="separator" translatesAutoresizingMaskIntoConstraints="NO" id="3h8-s6-6Cu">
@@ -57,7 +56,7 @@
                         <stackView distribution="fill" orientation="horizontal" alignment="top" spacing="5" horizontalStackHuggingPriority="249.99998474121094" verticalStackHuggingPriority="249.99998474121094" detachesHiddenViews="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1yD-J7-Qwb">
                             <rect key="frame" x="10" y="3" width="45" height="29"/>
                             <subviews>
-                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Tmq-MB-1gG">
+                                <button toolTip="Show the previous page" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Tmq-MB-1gG">
                                     <rect key="frame" x="0.0" y="-2" width="20" height="34"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="29" id="ckC-Sh-klO"/>
@@ -68,16 +67,16 @@
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
                                     <connections>
-                                        <binding destination="-2" name="enabled" keyPath="self.webView.canGoBack" id="g3c-Nr-hPZ"/>
                                         <binding destination="-2" name="target" keyPath="self.webView" id="CGa-3G-blT">
                                             <dictionary key="options">
                                                 <bool key="NSConditionallySetsEnabled" value="NO"/>
                                                 <string key="NSSelectorName">goBack:</string>
                                             </dictionary>
                                         </binding>
+                                        <binding destination="-2" name="enabled" keyPath="self.webView.canGoBack" id="g3c-Nr-hPZ"/>
                                     </connections>
                                 </button>
-                                <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FbL-IM-712">
+                                <button toolTip="Show the next page" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FbL-IM-712">
                                     <rect key="frame" x="25" y="-2" width="20" height="34"/>
                                     <constraints>
                                         <constraint firstAttribute="height" constant="29" id="qQF-JH-DtZ"/>
@@ -88,13 +87,13 @@
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
                                     <connections>
-                                        <binding destination="-2" name="enabled" keyPath="self.webView.canGoForward" id="zMg-mC-Dlp"/>
                                         <binding destination="-2" name="target" keyPath="self.webView" id="LHa-dl-Xs0">
                                             <dictionary key="options">
                                                 <bool key="NSConditionallySetsEnabled" value="NO"/>
                                                 <string key="NSSelectorName">goForward:</string>
                                             </dictionary>
                                         </binding>
+                                        <binding destination="-2" name="enabled" keyPath="self.webView.canGoForward" id="zMg-mC-Dlp"/>
                                     </connections>
                                 </button>
                             </subviews>
@@ -125,7 +124,7 @@
                 <customView horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="e8j-Q2-5uj">
                     <rect key="frame" x="0.0" y="0.0" width="798" height="18"/>
                     <subviews>
-                        <popUpButton translatesAutoresizingMaskIntoConstraints="NO" id="heP-ap-i0y" customClass="PopUpButton">
+                        <popUpButton toolTip="Refresh Mode" translatesAutoresizingMaskIntoConstraints="NO" id="heP-ap-i0y" customClass="PopUpButton">
                             <rect key="frame" x="735" y="0.0" width="63" height="18"/>
                             <popUpButtonCell key="cell" type="bevel" bezelStyle="rounded" alignment="left" controlSize="small" lineBreakMode="clipping" inset="2" arrowPosition="noArrow" preferredEdge="maxY" id="8ya-Gk-nW2" customClass="PopUpButtonCell">
                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -155,9 +154,6 @@
                                     </items>
                                 </menu>
                             </popUpButtonCell>
-                            <connections>
-                                <binding destination="-2" name="toolTip" keyPath="self.localizedRefreshModePopupToolTip" id="B0W-8g-AyB"/>
-                            </connections>
                         </popUpButton>
                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="uDK-9y-IDj" userLabel="Status Label">
                             <rect key="frame" x="8" y="2" width="38" height="14"/>
@@ -187,17 +183,23 @@
                         <constraint firstItem="uDK-9y-IDj" firstAttribute="centerY" secondItem="e8j-Q2-5uj" secondAttribute="centerY" id="uxl-3C-M4Q"/>
                     </constraints>
                 </customView>
-                <wkWebView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" allowsBackForwardNavigationGestures="YES" id="zaV-HC-dWL" customClass="SEEPreviewWebView">
+                <customView fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="boJ-WK-VTk">
                     <rect key="frame" x="0.0" y="18" width="798" height="585"/>
                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                    <wkWebViewConfiguration key="configuration" suppressesIncrementalRendering="YES">
-                        <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" audio="YES" video="YES"/>
-                        <wkPreferences key="preferences" javaScriptCanOpenWindowsAutomatically="NO"/>
-                    </wkWebViewConfiguration>
-                    <connections>
-                        <outlet property="navigationDelegate" destination="-2" id="ntc-7L-ypf"/>
-                    </connections>
-                </wkWebView>
+                    <subviews>
+                        <wkWebView horizontalCompressionResistancePriority="250" verticalCompressionResistancePriority="250" allowsBackForwardNavigationGestures="YES" id="zaV-HC-dWL" customClass="SEEPreviewWebView">
+                            <rect key="frame" x="0.0" y="0.0" width="798" height="585"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <wkWebViewConfiguration key="configuration" suppressesIncrementalRendering="YES">
+                                <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" audio="YES" video="YES"/>
+                                <wkPreferences key="preferences" javaScriptCanOpenWindowsAutomatically="NO"/>
+                            </wkWebViewConfiguration>
+                            <connections>
+                                <outlet property="navigationDelegate" destination="-2" id="ntc-7L-ypf"/>
+                            </connections>
+                        </wkWebView>
+                    </subviews>
+                </customView>
             </subviews>
             <constraints>
                 <constraint firstItem="ntc-8y-SiH" firstAttribute="leading" secondItem="c22-O7-iKe" secondAttribute="leading" id="7az-mV-CWl"/>

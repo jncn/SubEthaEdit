@@ -1,0 +1,33 @@
+
+/* Class = "NSButton"; ibShadowedToolTip = "Show the next page"; ObjectID = "FbL-IM-712"; */
+"FbL-IM-712.ibShadowedToolTip" = "Nächsten Seite Anzeigen";
+
+/* Class = "NSButton"; ibShadowedToolTip = "Refresh"; ObjectID = "Mtf-dY-7pH"; */
+"Mtf-dY-7pH.ibShadowedToolTip" = "Aktualisierung";
+
+/* Class = "NSMenuItem"; title = "automatic"; ObjectID = "Oba-0S-UlW"; */
+"Oba-0S-UlW.title" = "Automatisch";
+
+/* Class = "NSMenuItem"; title = "manually"; ObjectID = "P1Q-nP-WFj"; */
+"P1Q-nP-WFj.title" = "Manuell";
+
+/* Class = "NSButton"; ibShadowedToolTip = "Show the previous page"; ObjectID = "Tmq-MB-1gG"; */
+"Tmq-MB-1gG.ibShadowedToolTip" = "Vorherige Seite Anzeigen";
+
+/* Class = "NSMenu"; title = "OtherViews"; ObjectID = "Ucg-2U-92r"; */
+"Ucg-2U-92r.title" = "OtherViews";
+
+/* Class = "NSMenuItem"; title = "delayed"; ObjectID = "Wul-N0-kiX"; */
+"Wul-N0-kiX.title" = "Verzögert";
+
+/* Class = "NSPopUpButton"; ibShadowedToolTip = "Refresh Mode"; ObjectID = "heP-ap-i0y"; */
+"heP-ap-i0y.ibShadowedToolTip" = "Aktualisierungsmodus";
+
+/* Class = "NSTextFieldCell"; placeholderString = "URL"; ObjectID = "laj-BP-WkR"; */
+"laj-BP-WkR.placeholderString" = "URL";
+
+/* Class = "NSMenuItem"; title = "on save"; ObjectID = "nHf-F9-gtF"; */
+"nHf-F9-gtF.title" = "Beim Speichern";
+
+/* Class = "NSTextFieldCell"; title = "Status"; ObjectID = "sMS-fL-AYP"; */
+"sMS-fL-AYP.title" = "Status";
