@@ -154,9 +154,9 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
         [request setHTTPBody:[html dataUsingEncoding:encoding]];
         [NSOperationQueue TCM_performBlockOnMainThreadSynchronously:^{
             // `allowingReadAccessToURL` is the key to load resources like images and css
-            [self.webView loadFileURL:baseURL allowingReadAccessToURL:[baseURL URLByDeletingLastPathComponent]];
-            [self.webView loadHTMLString:html baseURL:baseURL];
-//            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
+//            [self.webView loadFileURL:baseURL allowingReadAccessToURL:[baseURL URLByDeletingLastPathComponent]];
+//            [self.webView loadHTMLString:html baseURL:baseURL];
+            [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
         }];
     };
     
