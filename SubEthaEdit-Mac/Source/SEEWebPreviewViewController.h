@@ -17,7 +17,7 @@ typedef NS_ENUM(int8_t, SEEWebPreviewRefreshType) {
 	kWebPreviewRefreshDelayed   = 4
 };
 
-@interface SEEWebPreviewViewController : NSViewController <WebUIDelegate, WebFrameLoadDelegate, WebResourceLoadDelegate, WebPolicyDelegate>
+@interface SEEWebPreviewViewController : NSViewController
 
 - (instancetype)initWithPlainTextDocument:(PlainTextDocument *)aDocument;
 

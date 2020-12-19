@@ -20,9 +20,8 @@
 static NSString *WebPreviewWindowSizePreferenceKey =@"WebPreviewWindowSize";
 static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 
-@interface SEEWebPreviewViewController () <WKNavigationDelegate, WKScriptMessageHandler>
+@interface SEEWebPreviewViewController () <WKNavigationDelegate, WKScriptMessageHandler, WKURLSchemeHandler>
 @property (nonatomic, strong) IBOutlet SEEPreviewWebView *webView;
-@property (nonatomic, strong) IBOutlet WebView *oWebView;
 @property (nonatomic, strong) IBOutlet NSTextField *oBaseUrlTextField;
 @property (nonatomic, strong) IBOutlet PopUpButton *oRefreshPopupButton;
 @property (nonatomic, strong) IBOutlet NSTextField *oStatusTextField;
@@ -123,16 +122,18 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     
     NSURL *baseURL=[NSURL URLWithString:@"http://localhost/"];
     NSString *potentialURLString = [self.oBaseUrlTextField stringValue];
+    
+    // TODO: Better handle external URLs
     if ([potentialURLString length] > 0) {
     	NSURL *tryURL = [NSURL URLWithString:potentialURLString];
 //    	NSLog(@"%s %@ %@",__FUNCTION__,[tryURL debugDescription],[tryURL standardizedURL]);
-    	if ([[tryURL host] length] > 0 || [[tryURL scheme] isEqualToString:@"file"]) {
+    	if ([[tryURL host] length] > 0 || [[tryURL scheme] isEqualToString:@"see-preview:file"]) {
     		baseURL = tryURL;
     	} else if ([potentialURLString characterAtIndex:0] == '/') {
-    		tryURL = [NSURL URLWithString:[@"file://" stringByAppendingString:potentialURLString]];
+    		tryURL = [NSURL URLWithString:[@"see-preview:file://" stringByAppendingString:potentialURLString]];
     		baseURL = tryURL;
     	} else {
-    		tryURL = [NSURL URLWithString:[@"http://" stringByAppendingString:potentialURLString]];
+    		tryURL = [NSURL URLWithString:[@"see-preview:http://" stringByAppendingString:potentialURLString]];
     		baseURL = tryURL;
     		[self.oBaseUrlTextField setStringValue:[tryURL absoluteString]];
     	}
@@ -141,6 +142,7 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 //	NSLog(@"%s using URL: %@",__FUNCTION__,baseURL);
     NSMutableURLRequest *request=[NSMutableURLRequest requestWithURL:baseURL];
     [request setMainDocumentURL:baseURL];
+    [request setCachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData];
     
     FoldableTextStorage *textStorage = (FoldableTextStorage *)[[self plainTextDocument] textStorage];
     NSString *string=[[textStorage fullTextStorage] string];
@@ -153,7 +155,7 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     void (^previewBlock)(NSString *html) = ^(NSString *html){
         [request setHTTPBody:[html dataUsingEncoding:encoding]];
         [NSOperationQueue TCM_performBlockOnMainThreadSynchronously:^{
-            // `allowingReadAccessToURL` is the key to load resources like images and css
+//            [self.webView loadRequest:request];
 //            [self.webView loadFileURL:baseURL allowingReadAccessToURL:[baseURL URLByDeletingLastPathComponent]];
 //            [self.webView loadHTMLString:html baseURL:baseURL];
             [self.webView loadData:[html dataUsingEncoding:encoding] MIMEType:@"text/html" characterEncodingName:IANACharSetName baseURL:baseURL];
@@ -169,7 +171,8 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     }
 }
 
-#pragma mark
+#pragma mark - Actions
+
 -(IBAction)refreshAndEmptyCache:(id)aSender {
     [[NSURLCache sharedURLCache] removeAllCachedResponses];
     
@@ -215,6 +218,8 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     WKPreferences *prefs = self.webView.configuration.preferences;
     [prefs setValue:@YES forKey:@"developerExtrasEnabled"];
     
+    [self.webView.configuration setURLSchemeHandler:self forURLScheme:@"see-preview"];
+    
     WKUserContentController *contentController = self.webView.configuration.userContentController;
     [contentController addScriptMessageHandler:self name:@"scriptHoverHandler"];
     [contentController addScriptMessageHandler:self name:@"scriptUpdateScrollPosition"];
@@ -222,7 +227,7 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     NSString *scriptString = [NSString stringWithContentsOfURL:scriptURL encoding:NSUTF8StringEncoding error:NULL];
     WKUserScript *userScript = [[WKUserScript alloc] initWithSource:scriptString injectionTime:WKUserScriptInjectionTimeAtDocumentEnd forMainFrameOnly:NO];
     [contentController addUserScript:userScript];
-
+    
 	[self updateBaseURL];
     [self setRefreshType:_refreshType];
 }
@@ -254,6 +259,32 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
     decisionHandler(WKNavigationResponsePolicyAllow);
 }
 
+#pragma mark - WKURLSchemeHandler
+
+- (void)webView:(nonnull WKWebView *)webView startURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    static NSInteger counter = 0;
+    NSURL *url = urlSchemeTask.request.URL;
+    if (![urlSchemeTask.request valueForHTTPHeaderField:@"LocalContentAndThisIsTheEncoding"]) {
+        NSLog(@"%@ %hhd %hhd", url, url.isFileURL, [[SEEScopedBookmarkManager sharedManager] canAccessURL:url]);
+        if (url.isFileURL && ![[SEEScopedBookmarkManager sharedManager] canAccessURL:url]) {
+            counter++;
+            if (counter == 1) {
+                if ([[SEEScopedBookmarkManager sharedManager] startAccessingURL:url]) {
+                    [self reloadWebViewCachingAllowed:NO];
+                }
+            }
+            counter--;
+        }
+    }
+}
+
+- (void)webView:(nonnull WKWebView *)webView stopURLSchemeTask:(nonnull id<WKURLSchemeTask>)urlSchemeTask {
+    NSURL *url = urlSchemeTask.request.URL;
+    if (url.isFileURL) {
+        [[SEEScopedBookmarkManager sharedManager] stopAccessingURL:url];
+    }
+}
+
 #pragma mark - CSS-update
 
 - (void)somePlainTextDocumentDidSave:(NSNotification *)aNotification {
@@ -268,44 +299,44 @@ static NSString *WebPreviewRefreshModePreferenceKey=@"WebPreviewRefreshMode";
 
 #pragma mark -
 #pragma mark ### WebResourceLoadDelegate ###
-- (id)webView:(WebView *)sender identifierForInitialRequest:(NSURLRequest *)request fromDataSource:(WebDataSource *)dataSource {
-	static NSInteger counter = 0;
-	NSURL *url = request.URL;
-	if (![request valueForHTTPHeaderField:@"LocalContentAndThisIsTheEncoding"]) {
-		if (url.isFileURL && ![[SEEScopedBookmarkManager sharedManager] canAccessURL:url]) {
-			counter++;
-			if (counter == 1) {
-				if ([[SEEScopedBookmarkManager sharedManager] startAccessingURL:url]) {
-					[self reloadWebViewCachingAllowed:NO];
-				}
-			}
-			counter--;
-		}
-	}
-	return url;
-}
-
-- (NSURLRequest *)webView:(WebView *)sender resource:(id)identifier willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse fromDataSource:(WebDataSource *)dataSource {
-	if (![request valueForHTTPHeaderField:@"LocalContentAndThisIsTheEncoding"]) {
-		NSMutableURLRequest *mutableRequest = [request mutableCopy];
-		[mutableRequest setCachePolicy:_shallCache ? NSURLRequestReturnCacheDataElseLoad : NSURLRequestReloadIgnoringCacheData];
-		return mutableRequest;
-	}
-    return request;
-}
-
-- (void)webView:(WebView *)sender resource:(id)identifier didFinishLoadingFromDataSource:(WebDataSource *)dataSource {
-	if ([identifier isKindOfClass:[NSURL class]]) {
-		NSURL *url = identifier;
-		if (url.isFileURL) {
-			[[SEEScopedBookmarkManager sharedManager] stopAccessingURL:url];
-		}
-	}
-}
-
-- (void)webView:(WebView *)webView decidePolicyForMIMEType:(NSString *)type request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id < WebPolicyDecisionListener >)listener {
-	[listener use];
-}
+//- (id)webView:(WebView *)sender identifierForInitialRequest:(NSURLRequest *)request fromDataSource:(WebDataSource *)dataSource {
+//	static NSInteger counter = 0;
+//	NSURL *url = request.URL;
+//	if (![request valueForHTTPHeaderField:@"LocalContentAndThisIsTheEncoding"]) {
+//		if (url.isFileURL && ![[SEEScopedBookmarkManager sharedManager] canAccessURL:url]) {
+//			counter++;
+//			if (counter == 1) {
+//				if ([[SEEScopedBookmarkManager sharedManager] startAccessingURL:url]) {
+//					[self reloadWebViewCachingAllowed:NO];
+//				}
+//			}
+//			counter--;
+//		}
+//	}
+//	return url;
+//}
+//
+//- (NSURLRequest *)webView:(WebView *)sender resource:(id)identifier willSendRequest:(NSURLRequest *)request redirectResponse:(NSURLResponse *)redirectResponse fromDataSource:(WebDataSource *)dataSource {
+//	if (![request valueForHTTPHeaderField:@"LocalContentAndThisIsTheEncoding"]) {
+//		NSMutableURLRequest *mutableRequest = [request mutableCopy];
+//		[mutableRequest setCachePolicy:_shallCache ? NSURLRequestReturnCacheDataElseLoad : NSURLRequestReloadIgnoringCacheData];
+//		return mutableRequest;
+//	}
+//    return request;
+//}
+//
+//- (void)webView:(WebView *)sender resource:(id)identifier didFinishLoadingFromDataSource:(WebDataSource *)dataSource {
+//	if ([identifier isKindOfClass:[NSURL class]]) {
+//		NSURL *url = identifier;
+//		if (url.isFileURL) {
+//			[[SEEScopedBookmarkManager sharedManager] stopAccessingURL:url];
+//		}
+//	}
+//}
+//
+//- (void)webView:(WebView *)webView decidePolicyForMIMEType:(NSString *)type request:(NSURLRequest *)request frame:(WebFrame *)frame decisionListener:(id < WebPolicyDecisionListener >)listener {
+//	[listener use];
+//}
 
 #pragma mark - Refresh timer
 
